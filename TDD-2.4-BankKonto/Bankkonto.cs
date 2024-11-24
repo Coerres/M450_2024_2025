@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TDD_2._4_BankKonto
 {
@@ -10,24 +6,18 @@ namespace TDD_2._4_BankKonto
     {
         public int KontoNummer { get; private set; }
         public double Guthaben { get; private set; }
-        public double aktivZins = 0.25;
-        public double passivZins = 0.5;
-        //int anzahlTage = 360;
+        public double AktivZins { get; private set; } = 0.25; // Standard aktiv Zins
+        public double PassivZins { get; private set; } = 0.5;  // Standard passiv Zins
+        public string Status { get; private set; } // "Standard" oder "VIP"
 
-        public Bankkonto(int kontoNummer, double guthaben)
-        { 
+        public Bankkonto(int kontoNummer, double guthaben, string status)
+        {
             KontoNummer = kontoNummer;
-
             Guthaben = guthaben;
-
-            /*
-            if (kontoNummer != null && kontoNummer != 0)
-            {
-                Random random = new Random();
-                kontoNummer = random.Next(10000000, 99999999);
-            }*/
+            Status = status;
         }
 
+        // Einzahlung 
         public void ZahleEin(double betrag)
         {
             if (betrag > 0)
@@ -36,38 +26,52 @@ namespace TDD_2._4_BankKonto
             }
         }
 
+        // Auszahlung 
         public void Beziehe(double betrag)
         {
             Guthaben -= betrag;
         }
 
-        public void Transferiere(int konto, double betrag)
-        {
-
-        }
-
         public double SchreibeZinsGut(int anzahlTage)
         {
-            double zinsBetrag = 0;
+            double zinsProTag = 0.0;
 
-            for (int i = 0; i < anzahlTage; i++)
+            // Berechnung des Zinses 
+            if (Guthaben >= 0 && Guthaben < 10000)
             {
-                if (Guthaben >= 0)
+                // Guthaben < 10000: AktivZins bleibt unverändert
+                zinsProTag = Guthaben * (AktivZins / 100);
+            }
+            else if (Guthaben >= 10000 && Guthaben < 50000)
+            {
+                // Guthaben zwischen 10000 und 50000: AktivZins - 0.5%
+                zinsProTag = Guthaben * ((AktivZins - 0.5) / 100);
+                if (zinsProTag < 0) zinsProTag = 0; // Sicherstellen, dass der Zins nicht negativ wird
+            }
+            else if (Guthaben >= 50000 && Guthaben < 100000)
+            {
+                // Guthaben zwischen 50000 und 100000
+                if (Status == "VIP")
                 {
-                    zinsBetrag = zinsBetrag + (Guthaben * aktivZins / 100);
+                    // VIP-Kunden: AktivZins - 0.75%
+                    zinsProTag = Guthaben * ((AktivZins - 0.75) / 100);
                 }
                 else
                 {
-                    zinsBetrag = zinsBetrag + (Guthaben * passivZins / 100);
+                    // Standard-Kunden: AktivZins - 1.0%, aber Zinsabzug kann nicht unter 0 gehen
+                    double zinsAbzug = AktivZins - 1.0;
+                    if (zinsAbzug < 0)
+                        zinsAbzug = 0; // Sicherstellen, dass der Zinsabzug nicht negativ wird
+                    zinsProTag = Guthaben * (zinsAbzug / 100);
                 }
             }
 
-            return zinsBetrag;
+            // Zinsberechnung (Tage)
+            double gesamtZins = zinsProTag * anzahlTage;
+            return Math.Round(gesamtZins, 2); 
         }
 
-        public void SchlisseKontoAb()
-        {
 
-        }
+
     }
 }

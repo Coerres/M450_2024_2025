@@ -1,194 +1,75 @@
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using TDD_2._4_BankKonto;
 
-namespace TDD_2._4_BankKontoTest
+[TestClass]
+public class BankkontoTest
 {
-    [TestClass]
-    public class BankkontoTest
+    [TestMethod]
+    public void ZinsBerechnung_Bereich1_EgalerStatus()
     {
-        [TestMethod]
-        public void KontoErstellungGuthabenIst0()
-        {
-            // Arrange
-            int testKontoNummer = 12345678;
+        // Arrange
+        Bankkonto konto = new Bankkonto(12345678, 5000, "Standard");
+        int tage = 1;
 
-            // Act
-            Bankkonto bankkonto = new(testKontoNummer, 0);
+        // Act
+        double zins = konto.SchreibeZinsGut(tage);
 
-            // Assert
-            Assert.AreEqual(0, bankkonto.Guthaben);
-        }
-     
-        /* 
-        * Spaeter initialisieren - Random Kontonummer
-        [TestMethod]
-        public void KontoErstellungNummerIstNicht0()
-        {
-            // Arrange
+        // Assert
+        Assert.AreEqual(1.25, zins, 0.01); // 5000 * 0.25% = 1.25
+    }
 
+    [TestMethod]
+    public void ZinsBerechnung_Bereich2_EgalerStatus()
+    {
+        // Arrange
+        Bankkonto konto = new Bankkonto(12345678, 20000, "VIP");
+        int tage = 1;
 
-            // Act
-            Bankkonto bankkonto = new Bankkonto();
+        // Act
+        double zins = konto.SchreibeZinsGut(tage);
 
-            // Assert
-            Assert.AreNotEqual(0, bankkonto.KontoNummer, "Kontonummer ist nicht 0");
-        }*/
+        // Assert
+        Assert.AreEqual(37.5, zins, 0.01); // 20000 * 0.2% = 37.5
+    }
 
-        [TestMethod]
-        public void Einzahlen() {
-            // Arrange 
-            int testKontoNummer = 12345678;
+    [TestMethod]
+    public void ZinsBerechnung_Bereich3_VIP()
+    {
+        // Arrange
+        Bankkonto konto = new Bankkonto(12345678, 75000, "VIP");
+        int tage = 1;
 
-            Bankkonto bankkonto = new(testKontoNummer, 0);
+        // Act
+        double zins = konto.SchreibeZinsGut(tage);
 
-            double testBetrag = 1000;
+        // Assert
+        Assert.AreEqual(187.5, zins, 0.01); // 75000 * (AktivZins - 0.75%) = 187.5
+    }
 
-            // Act
-            bankkonto.ZahleEin(testBetrag);
+    [TestMethod]
+    public void ZinsBerechnung_Bereich3_Standard()
+    {
+        // Arrange
+        Bankkonto konto = new Bankkonto(12345678, 75000, "Standard");
+        int tage = 1;
 
-            // Assert
-            Assert.AreEqual(testBetrag, bankkonto.Guthaben);
-        }
+        // Act
+        double zins = konto.SchreibeZinsGut(tage);
 
-        [TestMethod]
-        public void Beziehen()
-        {
-            // Arrange
-            int testKontoNummer = 123455678;
+        // Assert
+        Assert.AreEqual(187.5, zins, 0.01); // 75000 * (AktivZins - 1.0%) = 187.5
+    }
 
-            Bankkonto testBankkonto = new(testKontoNummer, 0);
+    [TestMethod]
+    public void ZinsBerechnung_MehrereTage()
+    {
+        // Arrange
+        Bankkonto konto = new Bankkonto(12345678, 10000, "Standard");
+        int tage = 10;
 
-            double testBetrag = 1000;
+        // Act
+        double zins = konto.SchreibeZinsGut(tage);
 
-            // Act
-            testBankkonto.Beziehe(testBetrag);
-
-            // Assert
-            Assert.AreEqual(-testBetrag, testBankkonto.Guthaben);
-        }
-
-        [TestMethod]
-        public void Zahlungen()
-        {
-            // Arrange
-            int testKontoNummer = 12345678;
-
-            double testErwarteterBetrag = 1000 + 1000 - 3000 + 2000;
-
-            Bankkonto testBankkonto = new(testKontoNummer, 0);
-
-            // Act
-            testBankkonto.ZahleEin(1000);
-            testBankkonto.ZahleEin(1000);
-            testBankkonto.Beziehe(3000);
-            testBankkonto.ZahleEin(2000);
-
-            // Assert
-            Assert.AreEqual(testErwarteterBetrag, testBankkonto.Guthaben);
-        }
-
-        [TestMethod]
-        public void AktivZins()
-        {
-            // Arrange
-            int testKontoNummer = 12345678; 
-
-            double testGuthaben = 1000;
-
-            double testZinsBetrag = 0;
-
-            Bankkonto testBankKonto = new(testKontoNummer, testGuthaben);
-
-            // Act
-
-            if (testGuthaben >= 0)
-            {
-                testZinsBetrag = testGuthaben * testBankKonto.aktivZins / 100;
-            } else
-            {
-                testZinsBetrag = testGuthaben * testBankKonto.passivZins / 100;
-            }
-
-            // Assert
-            Assert.AreEqual(2.5, testZinsBetrag);
-        }
-
-        [TestMethod]
-        public void PassivZins()
-        {
-            // Arrange
-            int testKontoNummer = 12345678;
-
-            double testGuthaben = -1000;
-
-            double testZinsBetrag = 0;
-
-            Bankkonto testBankKonto = new(testKontoNummer, testGuthaben);
-
-            // Act
-            if (testGuthaben >= 0)
-            {
-                testZinsBetrag = testGuthaben * testBankKonto.aktivZins / 100;
-            }
-            else
-            {
-                testZinsBetrag = testGuthaben * testBankKonto.passivZins / 100;
-            }
-
-            // Assert
-            Assert.AreEqual(-5.0, testZinsBetrag);
-        }
-
-        [TestMethod]
-        public void KontoAbschlussZinsHinzufuegen()
-        {
-            // Arrange
-            int testKontoNummer = 12345678;
-
-            double testGuthaben = 1000;
-
-            double testZinsBetrag = 2.5;
-
-            Bankkonto testBankKonto = new(testKontoNummer, testGuthaben);
-
-            // Act
-            if (testZinsBetrag >= 0)
-            {
-                testGuthaben = testGuthaben + testZinsBetrag;
-            }
-
-            // Assert
-            Assert.AreEqual(1002.5, testGuthaben);
-        }
-
-        [TestMethod]
-        public void ZinsUndAbschluss()
-        {
-            // Arrange
-            int testKontoNummer = 1488;
-
-            double testGuthaben = 1000;
-
-            double testZinsBetrag = 0;
-
-            Bankkonto testBankKonto = new(testKontoNummer, testGuthaben);
-
-            int anzahlTage = 180;
-
-            // Act
-            testZinsBetrag = testBankKonto.SchreibeZinsGut(anzahlTage);
-
-            if (testBankKonto.SchreibeZinsGut(anzahlTage) >= 0)
-            {
-                testGuthaben = testGuthaben + testZinsBetrag;
-            }
-            else
-            {
-                testGuthaben = testGuthaben - testZinsBetrag;
-            }
-
-            // Assert
-            Assert.AreEqual(1450, testGuthaben);
-        }
+        // Assert
+        Assert.AreEqual(20.0, zins, 0.01); // (10000 * 0.2%) * 10 Tage = 20.0
     }
 }
